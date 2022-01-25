@@ -1,0 +1,18 @@
+simple_randomization <- rbinom(50,1,0.5)
+sum(simple_randomization)
+
+k = 0
+
+for (i in 1:10000){
+  simple_randomization <- rbinom(50,1,0.5)
+  sum <- sum(simple_randomization)
+  if (sum >= 32 | sum <= 18){
+    k = k+1
+  }
+}
+
+k=0
+for (i in 0:18){
+  k = k + factorial(50)/(factorial(i)*factorial(50-i))
+}
+2*k/(2^50)
