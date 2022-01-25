@@ -1,0 +1,158 @@
+x <- c(1:200)
+
+set.seed(1)
+
+#Generate the three covariates randomly
+Gender <- c()
+x1 <- sample(x,length(x))
+
+for (i in 1:200){
+  if (x1[i] %% 2 == 0){
+    Gender[i] = 0
+  }
+  else {
+    Gender[i] = 1
+  }
+}
+
+Age1 = rep(c(1),times=30)
+Age2 = rep(c(2),times=40)
+Age3 = rep(c(3),times=80)
+Age4 = rep(c(4),times=50)
+Age = c(Age1, Age2, Age3, Age4)
+Age = sample(Age)
+
+status1 = rep(c(0),times=100)
+status2 = rep(c(1),times=60)
+status3 = rep(c(2),times=40)
+status = c(status1, status2, status3)
+status = sample(status)
+
+#Generate treatment by using simple randomization
+Treatment <- c()
+Treatment[1:200] <- rbinom(200,1,0.5)
+
+#Create the matrix for one time experiment
+Q1_M <- matrix(nrow=200,ncol=4)
+Q1_M[,1] <- Gender
+Q1_M[,2] <- Age
+Q1_M[,3] <- status
+Q1_M[,4] <- Treatment
+
+#Creatment the matrix for 10,000 times experiments
+Q2_M <- matrix(nrow=200, ncol=40000)
+for (i in 1:10000){
+  Treatment[1:200] <- rbinom(200,1,0.5)
+  Q2_M[,4*(i-1)+1] <- Gender
+  Q2_M[,4*(i-1)+2] <- Age
+  Q2_M[,4*(i-1)+3] <- status
+  Q2_M[,4*(i-1)+4] <- Treatment
+}
+
+#Creat the new matrix for separating the 24 cases based on three covariates
+Q4_M <-matrix(nrow=200, ncol=40000)
+t_total <- c()
+k_t <- 1
+k_number <- 1
+for (i1 in 0:1){
+  for (i2 in 1:4){
+    for (i3 in 0:2){
+      t1 = 0
+      for (i in 1:200) {
+        if (Q2_M[i,1]==i1& Q2_M[i,2]==i2& Q2_M[i,3]==i3){
+          t1 = t1 + 1
+        }
+      }
+      t_total[k_t] = t1
+      k_t = k_t+1
+      t2 = 0
+      for (i in 1:200) {
+        if (Q2_M[i,1]==i1& Q2_M[i,2]==i2& Q2_M[i,3]==i3){
+          Q4_M[k_number,]=Q2_M[i,]
+          k_number = k_number+1
+        }
+      }
+    }
+  }
+}
+
+#create the block for size 4
+B1 <- c(1,1,0,0)
+B2 <- c(1,0,1,0)
+B3 <- c(1,0,0,1)
+B4 <- c(0,1,1,0)
+B5 <- c(0,1,0,1)
+B6 <- c(0,0,1,1)
+B_total <- c(B1, B2, B3, B4, B5, B6)
+
+#generate the treatment based on the permuted stratified block method
+for (j in 1:10000){
+  Row <- 1
+  New_vector <- c()
+  for (i in 1:24){
+    blocksize <- 4
+    block <- c(1, 0, 1, 0)
+    block_n  <- t_total[i]
+    New_T <- blkrandomization(block_n, blocksize, block)
+    if (t_total[i]<4){
+      random_number <- sample(1:6,1)
+      New_T = B_total[((random_number-1)*4+1):((random_number-1)*4+t_total[i])]
+    }
+    New_vector[Row:(Row+(t_total[i]-1))]=New_T
+    Row = Row+t_total[i]
+  }
+  Q4_M[,4*(j-1)+4] = New_vector
+}
+
+#Calculate the balance
+minc <- c()
+maxc <- c()
+for (i in 1:10000){
+  t = cumsum(Q4_M[,4*(i-1)+4])[200]
+  if (t<=100){
+    minc[i] = t
+    maxc[i] = 200-t
+  }
+  else{
+    minc[i] = 200-t
+    maxc[i] = t
+  }
+}
+Y = sort(minc/maxc)
+X = c(1:10000)
+plot(Y,X,type="o", col='red',xlab="Proportion",ylab="Number")
+
+#Choose the row which satisfy the required covariates and consist of a new matrix
+t1 = 0
+for (i in 1:200) {
+  if (Q4_M[i,1]==1& Q4_M[i,2]==4& Q4_M[i,3]==2){
+    t1 = t1 + 1
+  }
+}
+
+t2 = 0
+Q5_M <-matrix(nrow=t1, ncol=40000)
+for (i in 1:200) {
+  if (Q4_M[i,1]==1& Q4_M[i,2]==4& Q4_M[i,3]==2){
+    Q5_M[t2+1,]=Q4_M[i,]
+    t2 = t2+1
+  }
+}
+
+#Calculate the balance with covariates by using the new matrix
+minc2 <- c()
+maxc2 <- c()
+for (i in 1:10000){
+  t = cumsum(Q5_M[,4*(i-1)+4])[t2]
+  if (t<=(t2)/2){
+    minc2[i] = t
+    maxc2[i] = t2-t
+  }
+  else{
+    minc2[i] = t2-t
+    maxc2[i] = t
+  }
+}
+Y = sort(minc2/maxc2)
+X = c(1:10000)
+plot(Y,X,type="o", col='red',xlab="Proportion", ylab="Number")
