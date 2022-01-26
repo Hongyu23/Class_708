@@ -1,0 +1,32 @@
+getwd()
+setwd('/Users/mac/Desktop')
+DATA = read.csv('/Users/mac/Desktop/armd.csv')
+
+model_1 <- lm(DATA$Diff24~DATA$Treat)
+model_2 <- lm(DATA$Diff52~DATA$Treat)
+model_3 <- lm(DATA$Diff52~DATA$Diff24)
+model_4 <- lm(DATA$Diff52~DATA$Treat+DATA$Diff24)
+
+summary(model_1)
+summary(model_2)
+summary(model_3)
+summary(model_4)
+
+t <- 0
+for (i in 4:16){
+  t = t + dbinom(i, 16, 0.15)*(pbinom(16,16,0.15)-pbinom(8-i,16,0.15))
+}
+(1-pbinom(3,16,0.15))+t
+
+t <- 0
+for (i in 4:16){
+  t = t + dbinom(i, 16, 0.4)*(pbinom(16,16,0.4)-pbinom(8-i,16,0.4))
+}
+(1-pbinom(3,16,0.4))+t
+
+library(clinfun)
+ph2simon(0.15, 0.4, 0.1, 0.1)
+ph2simon(0.15, 0.4, 0.034, 0.1)
+
+1-pbinom(8,32,0.15)
+pbinom(8,32,0.4)
