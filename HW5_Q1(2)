@@ -1,0 +1,57 @@
+library(Rlab)
+
+set.seed(1234567)
+Rate_1 <- c(0.3,0.35,0.4,0.45,0.5)
+i <- 1
+correct_MTD <- 0
+DLT <- 0
+treat1 <- 0
+treat2 <- 0
+while (i <= 5000){
+  j <- 1
+  while (j <= 5) {
+    Dose <- rbern(3,Rate_1[j])
+    if (sum(Dose) == 0){
+      if (j <=1){
+        treat1 = treat1 + 3
+      }
+      treat2 = treat2 + (3-sum(Dose))
+      j = j+1
+    }
+    else if (sum(Dose) >= 2){
+      if (j <=1){
+        treat1 = treat1 + (3-sum(Dose))
+      }
+      DLT = DLT + sum(Dose)
+      treat2 = treat2 + (3-sum(Dose))
+      j = j+10
+    }
+    else {
+      Dose2 <- rbern(3,Rate_1[j])
+      if (sum(Dose+Dose2) == 1){
+        if (j <=1){
+          treat1 = treat1 + (6-sum(Dose + Dose2))
+        }
+        DLT = DLT + sum(Dose + Dose2)
+        treat2 = treat2 + (6-sum(Dose + Dose2))
+        j = j+1
+      }
+      else {
+        if (j <=1){
+          treat1 = treat1 + (6-sum(Dose + Dose2))
+        }
+        DLT = DLT + sum(Dose + Dose2)
+        treat2 = treat2 + (6-sum(Dose + Dose2))
+        j = j+10
+      }
+    }
+  }
+  if (j == 12){
+    correct_MTD = correct_MTD + 1
+  }
+  i = i+1
+}
+Ans1 = correct_MTD/5000
+Ans2 = DLT/5000
+Ans3 = treat1/5000
+Ans4 = treat2/5000
