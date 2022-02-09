@@ -1,0 +1,17 @@
+library(UBCRM)
+Rate_1 <- c(0.1,0.2,0.3,0.4,0.5)
+ssim3p3(Rate_1, 5000, r = 2)
+ssimCrm(Rate_1, 5000, firstdose = 1, truerate = Rate_1, cohortsize = 3, target = 1/3,
+        nptmax =30, nmaxmtd = 30, nmaxdose = 30, approach = "bayes",
+        method = "fpost", model = "logistic", nextlevel = "ntarget", upskipping = F,
+        downskipping = F, r = 2)
+
+ssimCrm(c(0.1,0.2,0.3,0.4,0.5), 5000, firstdose = 1, truerate = Rate_1, cohortsize = 3, target = 1/3,
+        nptmax =30, nmaxmtd = 30, nmaxdose = 30, approach = "bayes",
+        method = "fpost", model = "logistic", nextlevel = "ntarget", upskipping = F,
+        downskipping = F, r = 2)
+
+ssimCrm(c(0.2,0.3,0.35,0.4,0.45), 5000, firstdose = 1, truerate = Rate_1, cohortsize = 3, target = 1/3,
+        nptmax =30, nmaxmtd = 30, nmaxdose = 30, approach = "bayes",
+        method = "fpost", model = "logistic", nextlevel = "ntarget", upskipping = F,
+        downskipping = F, r = 2, seed = 123)
